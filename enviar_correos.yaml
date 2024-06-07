@@ -1,0 +1,19 @@
+name: Enviar correos automáticos
+
+on:
+  schedule:
+    # Ejecutar cada lunes a las 8:00 AM (UTC)
+    - cron: '0 8 * * 1'
+
+jobs:
+  send_emails:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Bash
+        run: |
+          # Ejecutar el script en Bash
+          bash enviar_correo.sh
