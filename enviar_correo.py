@@ -29,7 +29,7 @@ def enviar_correo(destinatario, asunto, cuerpo, remitente, contrasena):
 def main():
     correos = leer_correo('correos.csv')
     remitente = 'ing.josenruiz@gmail.com'
-    contrasena = 'rwrg vxmi zzau mbti'
+    contrasena = 'pass'
     asunto = 'Saludos desde BrokerIA'
 
     for correo in correos:
