@@ -12,7 +12,7 @@ function enviar_felicitaciones_cumpleanos() {
 
 # Función para enviar PDFs personalizados cada seis meses
 function enviar_pdfs() {
-    python3 enviar_correo.py pdfs
+    python3 enviar_correo.py acuerdo
 }
 
 # Configurar la tarea programada para enviar saludos cada lunes a las 8:00 AM
