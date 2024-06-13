@@ -4,56 +4,10 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
-from fpdf import FPDF
 from datetime import datetime
 import smtplib
+from fpdf import FPDF
 
-class PDF(FPDF):
-    def header(self):
-        self.set_font('Arial', 'B', 12)
-        self.cell(0, 10, 'Acuerdo de Confidencialidad', 0, 1, 'C')
-
-    def footer(self):
-        self.set_y(-15)
-        self.set_font('Arial', 'I', 8)
-        self.cell(0, 10, f'Página {self.page_no()}', 0, 0, 'C')
-
-    def chapter_title(self, title):
-        self.set_font('Arial', 'B', 12)
-        self.cell(0, 10, title, 0, 1, 'L')
-        self.ln(10)
-
-    def chapter_body(self, body):
-        self.set_font('Arial', '', 12)
-        self.multi_cell(0, 10, body)
-        self.ln()
-
-def generar_pdf(nombre, fecha, empresa="BrokerIA"):
-    pdf = PDF()
-    pdf.add_page()
-
-    title = "Acuerdo de Confidencialidad"
-    body = f"""
-    Este Acuerdo de Confidencialidad ("Acuerdo") se celebra entre {nombre} y {empresa}, con fecha de {fecha}.
-    
-    1. Definición de Información Confidencial. A los efectos del presente Acuerdo, "Información Confidencial" incluirá toda información o datos de naturaleza confidencial que sean divulgados por una de las partes a la otra.
-    
-    2. Obligaciones de Confidencialidad. La parte receptora se compromete a mantener la confidencialidad de la Información Confidencial y no divulgarla a terceros sin el consentimiento previo por escrito de la parte divulgadora.
-    
-    3. Duración. Este Acuerdo será efectivo a partir de la fecha mencionada anteriormente y permanecerá en vigor durante un período de 6 meses a partir de esa fecha.
-    
-    Firmado,
-
-
-    {empresa}
-    """
-
-    pdf.chapter_title(title)
-    pdf.chapter_body(body)
-
-    filename = f"acuerdo_confidencialidad_{nombre.replace(' ', '_')}.pdf"
-    pdf.output(filename)
-    return filename
 
 class EmailSender:
     def __init__(self, remitente, contrasena):
@@ -112,21 +66,55 @@ class EmailSender:
                 cuerpo_html = template.replace('{{nombre}}', correo['nombre'])
                 self.enviar_correo(correo['email'], asunto, cuerpo_html, adjunto=None)
 
-    def enviar_acuerdo_confidencialidad(self, archivo_csv, remitente, contrasena):
+    def enviar_acuerdo_confidencialidad(self, archivo_csv):
         correos = self.leer_correos(archivo_csv)
         fecha_actual = datetime.now().strftime("%d-%m-%Y")
 
         for correo in correos:
             nombre = correo['nombre']
             email = correo['email']
-            archivo_pdf = generar_pdf(nombre, fecha_actual)
+            archivo_pdf = self.generar_pdf(nombre, fecha_actual)
             asunto = "Acuerdo de Confidencialidad"
             cuerpo = f"Hola {nombre}, adjunto encontrarás el acuerdo de confidencialidad. Por favor revisa y firma el documento.\n\nSaludos,\nBrokerIA"
             self.enviar_correo(email, asunto, cuerpo, adjunto=archivo_pdf)
 
+    def generar_pdf(self, nombre, fecha, empresa="BrokerIA"):
+        pdf = FPDF()
+        pdf.add_page()
+
+        pdf.set_font('Arial', 'B', 12)
+        pdf.cell(0, 10, 'Acuerdo de Confidencialidad', 0, 1, 'C')
+
+        pdf.set_font('Arial', '', 12)
+        pdf.ln(10)
+
+        pdf.multi_cell(0, 10, f"Este Acuerdo de Confidencialidad ('Acuerdo') se celebra entre {nombre} y {empresa}, con fecha de {fecha}.")
+
+        pdf.ln(10)
+
+        pdf.multi_cell(0, 10, "1. Definición de Información Confidencial. A los efectos del presente Acuerdo, 'Información Confidencial' incluirá toda información o datos de naturaleza confidencial que sean divulgados por una de las partes a la otra.")
+
+        pdf.ln(10)
+
+        pdf.multi_cell(0, 10, "2. Obligaciones de Confidencialidad. La parte receptora se compromete a mantener la confidencialidad de la Información Confidencial y no divulgarla a terceros sin el consentimiento previo por escrito de la parte divulgadora.")
+
+        pdf.ln(10)
+
+        pdf.multi_cell(0, 10, "3. Duración. Este Acuerdo será efectivo a partir de la fecha mencionada anteriormente y permanecerá en vigor durante un período de 6 meses a partir de esa fecha.")
+
+        pdf.ln(10)
+
+        pdf.set_font('Arial', 'I', 8)
+        pdf.cell(0, 10, f'Página {pdf.page_no()}', 0, 0, 'C')
+
+        filename = f"acuerdo_confidencialidad_{nombre.replace(' ', '_')}.pdf"
+        pdf.output(filename)
+        return filename
+
     def cargar_template(self, nombre_archivo):
         with open(nombre_archivo, 'r') as archivo:
             return archivo.read()
+
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
@@ -135,7 +123,7 @@ if __name__ == '__main__':
 
     accion = sys.argv[1]
     remitente = 'ing.josenruiz@gmail.com'
-    contrasena = 'mi_pass'
+    contrasena = 'rwrg vxmi zzau mbti'
     asunto_saludos = 'Saludos desde BrokerIA'
     asunto_felicitaciones = '¡Feliz Cumpleaños!'
     template_felicitaciones = 'felicitaciones.html'
@@ -147,6 +135,6 @@ if __name__ == '__main__':
     elif accion == 'cumpleanos':
         email_sender.enviar_felicitaciones_cumpleanos('correos.csv', asunto_felicitaciones, template_felicitaciones)
     elif accion == 'acuerdo':
-        email_sender.enviar_acuerdo_confidencialidad('correos.csv', remitente, contrasena)
+        email_sender.enviar_acuerdo_confidencialidad('correos.csv')
     else:
         print(f"Acción '{accion}' no reconocida.")
