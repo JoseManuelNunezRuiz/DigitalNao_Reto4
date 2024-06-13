@@ -1,23 +1,27 @@
 #!/bin/bash
 
-# Ejecutar saludos cada lunes a las 8 AM
-schedule_cron="0 8 * * 1"
-python3 enviar_felicitaciones.py &
-croncmd_saludos="python3 enviar_felicitaciones.py"
-cronjob_saludos="$schedule_cron $croncmd_saludos"
+# Función para enviar saludos cada lunes a las 8:00 AM
+function enviar_saludos() {
+    python3 enviar_correo.py saludos
+}
+
+# Función para enviar felicitaciones por cumpleaños todos los días a las 8:00 AM
+function enviar_felicitaciones_cumpleanos() {
+    python3 enviar_correo.py cumpleanos
+}
+
+# Configurar la tarea programada para enviar saludos cada lunes a las 8:00 AM
+schedule_saludos="0 8 * * 1"
+croncmd_saludos="enviar_saludos"
+cronjob_saludos="$schedule_saludos $croncmd_saludos"
 (crontab -l | grep -v -F "$croncmd_saludos"; echo "$cronjob_saludos") | crontab -
 
-# Ejecutar felicitaciones por cumpleaños todos los días a las 8 AM
-schedule_cron_diario="0 8 * * *"
-croncmd_cumpleanos="python3 enviar_felicitaciones.py"
-cronjob_cumpleanos="$schedule_cron_diario $croncmd_cumpleanos"
-(crontab -l | grep -v -F "$croncmd_cumpleanos"; echo "$cronjob_cumpleanos") | crontab -
+# Configurar la tarea programada para enviar felicitaciones por cumpleaños todos los días a las 8:00 AM
+schedule_felicitaciones="0 8 * * *"
+croncmd_felicitaciones="enviar_felicitaciones_cumpleanos"
+cronjob_felicitaciones="$schedule_felicitaciones $croncmd_felicitaciones"
+(crontab -l | grep -v -F "$croncmd_felicitaciones"; echo "$cronjob_felicitaciones") | crontab -
 
 # Salida de confirmación
 echo "Configuración de cron completada para enviar saludos los lunes y felicitaciones diarias por cumpleaños."
 
-# Descargar el script en Python en GitHub
-curl -O https://raw.githubusercontent.com/JoseManuelNunezRuiz/DigitalNao_Reto4/main/enviar_correo.py
-
-# Ejecutar el script de Python que envía el correo de saludo
-python3 enviar_correo.py
